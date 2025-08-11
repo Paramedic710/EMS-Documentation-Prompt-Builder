@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chest Pain Documentation - EMS Prompt Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header-left p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .question-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .question-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .option-btn {
+            padding: 10px 16px;
+            border: 2px solid #dee2e6;
+            background: white;
+            color: #495057;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .option-btn:hover {
+            border-color: #2a5298;
+            color: #2a5298;
+        }
+
+        .option-btn.selected {
+            background: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2a5298;
+        }
+
+        .format-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .format-section h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .prompt-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            min-height: 120px;
+            position: relative;
+        }
+
+        .prompt-output h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-family: inherit;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+
+        .copy-btn.copied {
+            background: #27ae60;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 20px 0;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #c82333;
+        }
+
+        .generate-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .generate-btn:hover {
+            background: #218838;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .button-group {
+                justify-content: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .grid-layout {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>💓 Chest Pain Documentation</h1>
+                <p>Build comprehensive chest pain assessment prompts for AI documentation</p>
+            </div>
+            <a href="Index.html" class="back-btn">← Back to Menu</a>
+        </div>
+
+        <div class="content">
+            <div class="question-group">
+                <div class="question-label">Patient Demographics</div>
+                <div class="button-group">
+                    <button class="option-btn" data-field="age" data-value="Adult (18-65)">Adult (18-65)</button>
+                    <button class="option-btn" data-field="age" data-value="Elderly (65+)">Elderly (65+)</button>
+                    <button class="option-btn" data-field="age" data-value="Pediatric">Pediatric</button>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">Gender</div>
+                <div class="button-group">
+                    <button class="option-btn" data-field="gender" data-value="Male">Male</button>
+                    <button class="option-btn" data-field="gender" data-value="Female">Female</button>
+                    <button class="option-btn" data-field="gender" data-value="Non-binary">Non-binary</button>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">Chest Pain Characteristics (Select all that apply)</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-crushing" data-complaint="crushing pain">
+                        <label for="chest-crushing">Crushing Pain</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-sharp" data-complaint="sharp pain">
+                        <label for="chest-sharp">Sharp Pain</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-burning" data-complaint="burning pain">
+                        <label for="chest-burning">Burning Pain</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-pressure" data-complaint="pressure/tightness">
+                        <label for="chest-pressure">Pressure/Tightness</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">Pain Radiation</div>
+                <div class="button-group">
+                    <button class="option-btn" data-field="radiation" data-value="Left Arm">Left Arm</button>
+                    <button class="option-btn" data-field="radiation" data-value="Right Arm">Right Arm</button>
+                    <button class="option-btn" data-field="radiation" data-value="Jaw">Jaw</button>
+                    <button class="option-btn" data-field="radiation" data-value="Back">Back</button>
+                    <button class="option-btn" data-field="radiation" data-value="None">None</button>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">Associated Symptoms (Select all that apply)</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="nausea" data-symptom="nausea/vomiting">
+                        <label for="nausea">Nausea/Vomiting</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sweating" data-symptom="diaphoresis">
+                        <label for="sweating">Diaphoresis</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="dizziness" data-symptom="dizziness">
+                        <label for="dizziness">Dizziness</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="palpitations" data-symptom="palpitations">
+                        <label for="palpitations">Palpitations</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">Pertinent Negatives (Select what patient DENIES)</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-neg-nausea" data-negative="nausea/vomiting">
+                        <label for="chest-neg-nausea">Nausea/Vomiting</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-neg-diaphoresis" data-negative="diaphoresis">
+                        <label for="chest-neg-diaphoresis">Diaphoresis</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-neg-sob" data-negative="shortness of breath">
+                        <label for="chest-neg-sob">Shortness of Breath</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-neg-palpitations" data-negative="palpitations">
+                        <label for="chest-neg-palpitations">Palpitations</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">OPQRST Assessment</div>
+                <div class="grid-layout">
+                    <strong>Onset:</strong>
+                    <div class="button-group">
+                        <button class="option-btn" data-field="onset" data-value="Sudden">Sudden</button>
+                        <button class="option-btn" data-field="onset" data-value="Gradual">Gradual</button>
+                        <button class="option-btn" data-field="onset" data-value="With Exertion">With Exertion</button>
+                        <button class="option-btn" data-field="onset" data-value="At Rest">At Rest</button>
+                    </div>
+                </div>
+                <div class="grid-layout">
+                    <strong>Quality:</strong>
+                    <div class="button-group">
+                        <button class="option-btn" data-field="quality" data-value="Crushing">Crushing</button>
+                        <button class="option-btn" data-field="quality" data-value="Sharp">Sharp</button>
+                        <button class="option-btn" data-field="quality" data-value="Burning">Burning</button>
+                        <button class="option-btn" data-field="quality" data-value="Pressure">Pressure</button>
+                        <button class="option-btn" data-field="quality" data-value="Tearing">Tearing</button>
+                    </div>
+                </div>
+                <div class="grid-layout">
+                    <strong>Severity:</strong>
+                    <div class="button-group">
+                        <button class="option-btn" data-field="severity" data-value="Mild (1-3)">Mild (1-3)</button>
+                        <button class="option-btn" data-field="severity" data-value="Moderate (4-6)">Moderate (4-6)</button>
+                        <button class="option-btn" data-field="severity" data-value="Severe (7-10)">Severe (7-10)</button>
+                    </div>
+                </div>
+                <div class="grid-layout">
+                    <strong>Timing:</strong>
+                    <div class="button-group">
+                        <button class="option-btn" data-field="timing" data-value="Constant">Constant</button>
+                        <button class="option-btn" data-field="timing" data-value="Intermittent">Intermittent</button>
+                        <button class="option-btn" data-field="timing" data-value="Getting Worse">Getting Worse</button>
+                        <button class="option-btn" data-field="timing" data-value="Getting Better">Getting Better</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">SAMPLE History</div>
+                
+                <div class="question-label">🚨 Allergies</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 40px;">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-nkda" data-allergy="NKDA">
+                        <label for="allergy-nkda">NKDA</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-unknown" data-allergy="Unknown allergies">
+                        <label for="allergy-unknown">Unknown</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-penicillin" data-allergy="Penicillin">
+                        <label for="allergy-penicillin">Penicillin</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-sulfa" data-allergy="Sulfa drugs">
+                        <label for="allergy-sulfa">Sulfa drugs</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-codeine" data-allergy="Codeine">
+                        <label for="allergy-codeine">Codeine</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-morphine" data-allergy="Morphine">
+                        <label for="allergy-morphine">Morphine</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-aspirin" data-allergy="Aspirin">
+                        <label for="allergy-aspirin">Aspirin</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allergy-iodine" data-allergy="Iodine">
+                        <label for="allergy-iodine">Iodine</label>
+                    </div>
+                </div>
+
+                <div class="question-label">💊 Current Medications</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 40px;">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-none" data-medication="No medications">
+                        <label for="med-none">None</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-lisinopril" data-medication="Lisinopril">
+                        <label for="med-lisinopril">Lisinopril</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-metoprolol" data-medication="Metoprolol">
+                        <label for="med-metoprolol">Metoprolol</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-atorvastatin" data-medication="Atorvastatin">
+                        <label for="med-atorvastatin">Atorvastatin</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-aspirin" data-medication="Aspirin">
+                        <label for="med-aspirin">Aspirin</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-warfarin" data-medication="Warfarin">
+                        <label for="med-warfarin">Warfarin</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-nitroglycerin" data-medication="Nitroglycerin">
+                        <label for="med-nitroglycerin">Nitroglycerin</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="med-clopidogrel" data-medication="Plavix (Clopidogrel)">
+                        <label for="med-clopidogrel">Plavix</label>
+                    </div>
+                </div>
+
+                <div class="question-label">📋 Past Medical History</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-pmh-mi" data-pmh="Previous myocardial infarction">
+                        <label for="chest-pmh-mi">Previous MI</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-pmh-cad" data-pmh="Coronary artery disease">
+                        <label for="chest-pmh-cad">CAD</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-pmh-htn" data-pmh="Hypertension">
+                        <label for="chest-pmh-htn">Hypertension</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chest-pmh-none" data-pmh="No significant past medical history">
+                        <label for="chest-pmh-none">No significant PMH</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-label">Additional Information</div>
+                <textarea id="chest-additional" placeholder='Patient statements or unusual findings, e.g., "It feels like an elephant sitting on my chest" or "I was shoveling snow when it started"...'></textarea>
+            </div>
+
+            <!-- Chart Section Selection -->
+            <div class="format-section">
+                <h3>📋 Chart Section (Select One)</h3>
+                <div class="question-group">
+                    <div class="question-label">Which chart section are you documenting?</div>
+                    <div class="button-group">
+                        <button class="option-btn" data-field="section" data-value="History of Present Illness (HPI)">History of Present Illness (HPI)</button>
+                        <button class="option-btn" data-field="section" data-value="Scene Description">Scene Description</button>
+                        <button class="option-btn" data-field="section" data-value="Physical Assessment">Physical Assessment</button>
+                        <button class="option-btn" data-field="section" data-value="Vital Signs">Vital Signs</button>
+                        <button class="option-btn" data-field="section" data-value="Interventions">Interventions</button>
+                        <button class="option-btn" data-field="section" data-value="Assessment & Plan">Assessment & Plan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Prompt Output -->
+            <div class="prompt-output">
+                <h3>Generated Prompt:</h3>
+                <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+                <div id="prompt-text">Select options above to generate your documentation prompt...</div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn clear-btn" onclick="clearForm()">Clear All</button>
+                <button class="action-btn generate-btn" onclick="generatePrompt()">Generate Prompt</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Prompt copied to clipboard!</div>
+
+    <script>
+        // Data storage for form selections
+        const formData = {
+            age: '',
+            gender: '',
+            complaints: [],
+            radiation: '',
+            symptoms: [],
+            negatives: [],
+            onset: '',
+            quality: '',
+            severity: '',
+            timing: '',
+            allergies: [],
+            medications: [],
+            pmh: [],
+            additional: '',
+            section: ''
+        };
+
+        // Handle button selections (single choice)
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const field = this.dataset.field;
+                const value = this.dataset.value;
+                
+                // Remove selected class from other buttons in same group
+                const group = this.closest('.button-group');
+                group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                
+                // Add selected class to clicked button
+                this.classList.add('selected');
+                
+                // Update form data
+                formData[field] = value;
+                
+                // Auto-generate prompt
+                generatePrompt();
+            });
+        });
+
+        // Handle checkbox selections (multiple choice)
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const value = this.dataset.complaint || this.dataset.symptom || this.dataset.negative || 
+                             this.dataset.allergy || this.dataset.medication || this.dataset.pmh;
+                
+                if (this.dataset.complaint) {
+                    updateArray(formData.complaints, value, this.checked);
+                } else if (this.dataset.symptom) {
+                    updateArray(formData.symptoms, value, this.checked);
+                } else if (this.dataset.negative) {
+                    updateArray(formData.negatives, value, this.checked);
+                } else if (this.dataset.allergy) {
+                    updateArray(formData.allergies, value, this.checked);
+                } else if (this.dataset.medication) {
+                    updateArray(formData.medications, value, this.checked);
+                } else if (this.dataset.pmh) {
+                    updateArray(formData.pmh, value, this.checked);
+                }
+                
+                // Auto-generate prompt
+                generatePrompt();
+            });
+        });
+
+        // Handle textarea input
+        document.getElementById('chest-additional').addEventListener('input', function() {
+            formData.additional = this.value;
+            generatePrompt();
+        });
+
+        function updateArray(array, value, checked) {
+            if (checked && !array.includes(value)) {
+                array.push(value);
+            } else if (!checked) {
+                const index = array.indexOf(value);
+                if (index > -1) {
+                    array.splice(index, 1);
+                }
+            }
+        }
+
+        function generatePrompt() {
+            let prompt = '';
+            
+            // Start with role and context
+            prompt += "You are an expert EMS documentation assistant. ";
+            
+            if (formData.section) {
+                prompt += `Write a professional ${formData.section} entry for a chest pain patient. `;
+            } else {
+                prompt += "Write professional EMS documentation for a chest pain patient. ";
+            }
+
+            // Patient demographics
+            if (formData.age || formData.gender) {
+                prompt += "Patient is ";
+                if (formData.age) prompt += `${formData.age.toLowerCase()}`;
+                if (formData.age && formData.gender) prompt += ", ";
+                if (formData.gender) prompt += `${formData.gender.toLowerCase()}`;
+                prompt += ". ";
+            }
+
+            // Chief complaint and characteristics
+            if (formData.complaints.length > 0) {
+                prompt += `Chief complaint: chest pain described as ${formData.complaints.join(', ')}. `;
+            } else {
+                prompt += "Chief complaint: chest pain. ";
+            }
+
+            // OPQRST details
+            const opqrst = [];
+            if (formData.onset) opqrst.push(`Onset: ${formData.onset.toLowerCase()}`);
+            if (formData.quality) opqrst.push(`Quality: ${formData.quality.toLowerCase()}`);
+            if (formData.radiation && formData.radiation !== 'None') opqrst.push(`Radiates to: ${formData.radiation.toLowerCase()}`);
+            if (formData.severity) opqrst.push(`Severity: ${formData.severity.toLowerCase()}`);
+            if (formData.timing) opqrst.push(`Timing: ${formData.timing.toLowerCase()}`);
+            
+            if (opqrst.length > 0) {
+                prompt += `OPQRST assessment: ${opqrst.join(', ')}. `;
+            }
+
+            // Associated symptoms
+            if (formData.symptoms.length > 0) {
+                prompt += `Associated symptoms include: ${formData.symptoms.join(', ')}. `;
+            }
+
+            // Pertinent negatives
+            if (formData.negatives.length > 0) {
+                prompt += `Patient denies: ${formData.negatives.join(', ')}. `;
+            }
+
+            // SAMPLE History
+            if (formData.allergies.length > 0) {
+                prompt += `Allergies: ${formData.allergies.join(', ')}. `;
+            }
+
+            if (formData.medications.length > 0) {
+                prompt += `Current medications: ${formData.medications.join(', ')}. `;
+            }
+
+            if (formData.pmh.length > 0) {
+                prompt += `Past medical history: ${formData.pmh.join(', ')}. `;
+            }
+
+            // Additional information
+            if (formData.additional.trim()) {
+                prompt += `Additional notes: ${formData.additional.trim()}. `;
+            }
+
+            // Instructions for format
+            prompt += "\n\nFormat the documentation as professional EMS narrative that would be appropriate for a patient care report. ";
+            prompt += "Use proper medical terminology, be concise but thorough, and follow standard EMS documentation practices. ";
+            prompt += "Include relevant assessment findings and maintain objectivity throughout the narrative.";
+
+            // Update the display
+            document.getElementById('prompt-text').textContent = prompt || "Select options above to generate your documentation prompt...";
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('prompt-text').textContent;
+            
+            if (promptText === "Select options above to generate your documentation prompt...") {
+                showToast("Please select some options first!");
+                return;
+            }
+
+            navigator.clipboard.writeText(promptText).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.textContent;
+                
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                
+                showToast("Prompt copied to clipboard!");
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showToast("Failed to copy. Please select and copy manually.");
+            });
+        }
+
+        function clearForm() {
+            // Reset form data
+            Object.keys(formData).forEach(key => {
+                if (Array.isArray(formData[key])) {
+                    formData[key] = [];
+                } else {
+                    formData[key] = '';
+                }
+            });
+
+            // Clear all button selections
+            document.querySelectorAll('.option-btn.selected').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Clear all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            // Clear textarea
+            document.getElementById('chest-additional').value = '';
+
+            // Reset prompt display
+            document.getElementById('prompt-text').textContent = "Select options above to generate your documentation prompt...";
+            
+            showToast("Form cleared successfully!");
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize prompt generation on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            generatePrompt();
+        });
+    </script>
+</body>
+</html>
